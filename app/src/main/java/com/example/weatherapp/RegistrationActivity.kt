@@ -1,15 +1,26 @@
 package com.example.weatherapp
 
+import android.app.DatePickerDialog
+import android.content.Intent
+import android.content.res.ColorStateList
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.InputType
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.*
+import androidx.annotation.RequiresApi
+import com.example.weatherapp.models.PincodeDetails
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.textfield.MaterialAutoCompleteTextView
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.text.DateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
-class RegistrationActivity : AppCompatActivity() {
+class RegistrationActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener{
 
     lateinit var toolbar:MaterialToolbar
     lateinit var mobileNo:EditText
@@ -24,16 +35,48 @@ class RegistrationActivity : AppCompatActivity() {
     lateinit var registerButton:Button
     lateinit var district:TextView
     lateinit var state:TextView
-
+    lateinit var progressBar: ProgressBar
     val genderSpinnerValues= arrayOf("Male","Female","Other")
-   // lateinit var genderDropdown:AutoCompleteTextView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_registration)
         init()
-        buttonClickFunctions()
         dobSpinner()
+       registerButton.setOnClickListener {
+           checkEnteredData()
+       }
 
+       dateIcon.setOnClickListener {
+           val datePicker = DatePickerFragment()
+           datePicker.show(supportFragmentManager,"date picker")
+       }
+
+       pincode.addTextChangedListener(object : TextWatcher {
+           override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
+           }
+
+           override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+           }
+
+           @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+           override fun afterTextChanged(p0: Editable?) {
+               if (pincode.text.length<6){
+                   pincode.error="Pin-code must be 6 digit long"
+                   checkButton.isEnabled=false
+                   checkButton.setBackgroundResource(R.color._grey)
+                   return
+               }
+               checkButton.isEnabled=true
+               checkButton.setBackgroundTintList(ColorStateList.valueOf(resources.getColor(R.color.black_light)))
+               checkButton.setOnClickListener {
+                   progressBar.visibility=View.VISIBLE
+                   val PINCODE = pincode.text.toString().toInt();
+                   getPincodeDetails(PINCODE)
+               }
+           }
+
+       })
 
     }
 
@@ -51,29 +94,11 @@ class RegistrationActivity : AppCompatActivity() {
         registerButton=findViewById(R.id.register)
         district=findViewById(R.id.district)
         state=findViewById(R.id.state)
-    //    genderDropdown=findViewById(R.id.genderDropDown)
+        progressBar=findViewById(R.id.animationView)
         dateIcon.setColorFilter(R.color.black)
-        gender.inputType=InputType.TYPE_NULL
-        dob.inputType=InputType.TYPE_NULL
-       // TODO pincode  check color change
+
 
     }
-    private fun buttonClickFunctions(){
-        checkButton.setOnClickListener {
-            // TODO get Pincode api result
-            Toast.makeText(this,"here",Toast.LENGTH_SHORT).show()
-
-        }
-        registerButton.setOnClickListener {
-            checkEnteredData()
-           Toast.makeText(this,"Entered data passes",Toast.LENGTH_SHORT).show()
-        }
-
-        dateIcon.setOnClickListener {
-            // TODO date selection dialog
-        }
-    }
-
     private fun checkEnteredData() {
         if (mobileNo.text.isNullOrBlank()){
             mobileNo.error = "Enter Mobile No"
@@ -100,13 +125,17 @@ class RegistrationActivity : AppCompatActivity() {
             mobileNo.error = "Enter correct Mobile No"
             return
         }
+
+        val intent = Intent(this,MainActivity::class.java)
+        startActivity(intent)
     }
+
 
     private fun dobSpinner(){
         val dropdownAdapter = ArrayAdapter(this,
                 R.layout.support_simple_spinner_dropdown_item,genderSpinnerValues)
        gender.setAdapter(dropdownAdapter)
-       gender.threshold= Int.MAX_VALUE
+      // gender.threshold= Int.MAX_VALUE
         gender.onItemSelectedListener=object : AdapterView.OnItemSelectedListener{
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
                gender.setText(genderSpinnerValues[p2])
@@ -121,5 +150,67 @@ class RegistrationActivity : AppCompatActivity() {
             gender.showDropDown()
 
         }
+    }
+
+    override fun onDateSet(p0: DatePicker?, year: Int, month: Int, date: Int) {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.YEAR,year)
+        calendar.set(Calendar.MONTH,month)
+        calendar.set(Calendar.DATE,date)
+        val finalDate = DateFormat.getDateInstance().format(calendar.time)
+        dob.setText(finalDate)
+    }
+
+    private fun getPincodeDetails(pincode:Int){
+
+        val request = RetrofitClient.buildPincodeService(Api::class.java)
+        val call = request.getPinCodeDetails(pincode)
+        call.enqueue(object : Callback<ArrayList<PincodeDetails>> {
+            override fun onResponse(
+                call: Call<ArrayList<PincodeDetails>>,
+                response: Response<ArrayList<PincodeDetails>>
+            ) {
+                if (!response.isSuccessful) {
+                    progressBar.visibility=View.GONE
+                    Toast.makeText(
+                        this@RegistrationActivity, "Something went wrong try again later",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return
+                }
+                val body = response.body()
+                if (body!=null){
+                    val mainData = body.get(0)
+                    if (mainData.status.equals("Error")){
+                        progressBar.visibility=View.GONE
+                        Toast.makeText(
+                            this@RegistrationActivity, mainData.message ,Toast.LENGTH_SHORT
+                        ).show()
+                        return
+                    }
+                    val postOffice = mainData.postOfficeDetails.get(0)
+                    state.text="State : "+postOffice.state
+                    district.text="District : "+postOffice.district
+                    progressBar.visibility=View.GONE
+
+                }else{
+                    progressBar.visibility=View.GONE
+                    Toast.makeText(
+                        this@RegistrationActivity, "Something went wrong try again later",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            }
+
+            override fun onFailure(call: Call<ArrayList<PincodeDetails>>, t: Throwable) {
+                progressBar.visibility=View.GONE
+                Toast.makeText(
+                    this@RegistrationActivity, t.message,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+        })
     }
 }
