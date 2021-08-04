@@ -8,6 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="background_grey">#C6C2C2</color>
-    <color name="blue_progress_bar">#000000</color>
+    <color name="blue_progress_bar">#1786E6</color>
     <color name="_grey">#B3B2AF</color>
 </resources>

@@ -4,15 +4,120 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activities.MainActivity">
+    tools:context=".Activities.MainActivity"
+    android:background="@color/background_grey"
+    >
 
-    <TextView
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@color/black_light"
+        android:gravity="center_vertical"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:text="Weather Today"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            />
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <LinearLayout
+        android:id="@+id/details_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginEnd="15dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolBar">
+
+        <EditText
+            android:id="@+id/cityName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:hint="City Name"
+            android:textColor="@color/black"
+            android:textColorHint="@color/black"
+            android:textSize="22sp"
+            android:padding="6dp"
+            android:layout_margin="5dp"
+            />
+        <Button
+            android:id="@+id/showResults"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Show Results"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="@color/blue_progress_bar"/>
+        <TextView
+            android:id="@+id/tempCen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Temperature in Centigrade:"
+            android:padding="6dp"
+            android:textSize="20sp"
+            android:layout_margin="5dp"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/black"
+            android:visibility="gone"
+            />
+        <TextView
+            android:id="@+id/tempFah"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Temperature in Fahrenheit:"
+            android:padding="6dp"
+            android:textSize="20sp"
+            android:layout_margin="5dp"
+            android:textColor="@color/black"
+            android:visibility="gone"
+            />
+        <TextView
+            android:id="@+id/latitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Latitude:"
+            android:padding="6dp"
+            android:textSize="20sp"
+            android:layout_margin="5dp"
+            android:textColor="@color/black"
+            android:visibility="gone"
+            />
+        <TextView
+            android:id="@+id/longitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Longitude:"
+            android:padding="6dp"
+            android:textSize="20sp"
+            android:layout_margin="5dp"
+            android:textColor="@color/black"
+            android:visibility="gone"
+            />
+    </LinearLayout>
+    <ProgressBar
+        android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
