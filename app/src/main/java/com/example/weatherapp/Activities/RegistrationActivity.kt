@@ -1,4 +1,4 @@
-package com.example.weatherapp
+package com.example.weatherapp.Activities
 
 import android.app.DatePickerDialog
 import android.content.Intent
@@ -11,7 +11,11 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
+import com.example.weatherapp.R
+import com.example.weatherapp.Utils.DatePickerFragment
+import com.example.weatherapp.Utils.RetrofitClient
 import com.example.weatherapp.models.PincodeDetails
+import com.example.weatherapp.service.Api
 import com.google.android.material.appbar.MaterialToolbar
 import retrofit2.Call
 import retrofit2.Callback
@@ -126,14 +130,14 @@ class RegistrationActivity : AppCompatActivity(), DatePickerDialog.OnDateSetList
             return
         }
 
-        val intent = Intent(this,MainActivity::class.java)
+        val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
     }
 
 
     private fun dobSpinner(){
         val dropdownAdapter = ArrayAdapter(this,
-                R.layout.support_simple_spinner_dropdown_item,genderSpinnerValues)
+            R.layout.support_simple_spinner_dropdown_item,genderSpinnerValues)
        gender.setAdapter(dropdownAdapter)
       // gender.threshold= Int.MAX_VALUE
         gender.onItemSelectedListener=object : AdapterView.OnItemSelectedListener{

@@ -1,4 +1,4 @@
-package com.example.weatherapp
+package com.example.weatherapp.Utils
 
 import android.app.DatePickerDialog
 import android.app.Dialog

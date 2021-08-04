@@ -1,4 +1,4 @@
-package com.example.weatherapp
+package com.example.weatherapp.service
 
 import com.example.weatherapp.models.PincodeDetails
 import retrofit2.Call
