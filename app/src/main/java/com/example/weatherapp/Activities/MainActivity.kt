@@ -1,18 +1,20 @@
 package com.example.weatherapp.Activities
 
+
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.*
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.weatherapp.R
-import com.example.weatherapp.Utils.Constants
-import com.example.weatherapp.Utils.RetrofitClient
-import com.example.weatherapp.models.WeatherDetail
-import com.example.weatherapp.service.Api
+import com.example.weatherapp.Utils.Constants.checkConnection
+import com.example.weatherapp.Utils.Event
+import com.example.weatherapp.ViewModel.WeatherViewModel
 import com.google.android.material.appbar.MaterialToolbar
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,16 +26,38 @@ class MainActivity : AppCompatActivity() {
     lateinit var tempInFah: TextView
     lateinit var tempInCen: TextView
     lateinit var progressBar: ProgressBar
+    lateinit var cityNameFromRegistration: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         init()
+        if (intent!=null){
+            cityNameFromRegistration = intent.getStringExtra("cityName").toString()
+           cityName.setText( cityNameFromRegistration)
+            getWeatherDetails(cityNameFromRegistration)
+        }
+        cityName.addTextChangedListener(object: TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+                tempInCen.visibility = View.GONE
+                tempInFah.visibility = View.GONE
+                latitude.visibility = View.GONE
+                longitude.visibility = View.GONE
+            }
+
+        })
         showResults.setOnClickListener {
             if (cityName.text.isNullOrEmpty()){
                 Toast.makeText(this,"Enter city",Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            progressBar.visibility =View.VISIBLE
             getWeatherDetails(cityName.text.toString())
 
         }
@@ -41,52 +65,46 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getWeatherDetails(cityName: String) {
-        val request = RetrofitClient.buildWeatherService(Api::class.java)
-        val call = request.getWeatherDetail(Constants.key,cityName,Constants.aqi)
-        call.enqueue(object: Callback<WeatherDetail>{
-            override fun onResponse(call: Call<WeatherDetail>, response: Response<WeatherDetail>) {
-                if (!response.isSuccessful) {
-                    progressBar.visibility= View.GONE
-                    Toast.makeText(
-                            this@MainActivity, "Something went wrong try again later",
-                            Toast.LENGTH_SHORT
-                    ).show()
-                    return
-                }
-                val weatherDetail = response.body()
-                if (weatherDetail!=null){
+        if (checkConnection(this)) {
+            progressBar.visibility=View.VISIBLE
+            ViewModelProvider(this).get(WeatherViewModel::class.java)
+                    .getDetailsFromRepo(cityName)!!.observe(this, Observer {
+                        when (it.status) {
+                            Event.Status.SUCCESS->{
+                                val weatherDetail = it.content!!
+                                val current = weatherDetail.current
+                                val location = weatherDetail.location
+                                tempInCen.visibility = View.VISIBLE
+                                tempInFah.visibility = View.VISIBLE
+                                latitude.visibility = View.VISIBLE
+                                longitude.visibility = View.VISIBLE
+                                tempInCen.text = "Temperature in Centigrade : " + current.tempInC
+                                tempInFah.text = "Temperature in Fahrenheit : " + current.tempInF
+                                latitude.text = "Latitude : " + location.latitude
+                                longitude.text = " Longitude : " + location.longitude
+                                progressBar.visibility = View.GONE
+                            }
+                            Event.Status.ERROR->{
+                                if (it.message!=null){
+                                    progressBar.visibility = View.GONE
+                                    Toast.makeText(this@MainActivity,it.message,Toast.LENGTH_SHORT).show()
+                                    tempInCen.visibility = View.GONE
+                                    tempInFah.visibility = View.GONE
+                                    latitude.visibility = View.GONE
+                                    longitude.visibility = View.GONE
+                                }else{
+                                    progressBar.visibility = View.GONE
+                                    Toast.makeText(this@MainActivity,"Something went wrong. Try again later",
+                                        Toast.LENGTH_SHORT).show()
 
-                    val current = weatherDetail.current
-                    val location = weatherDetail.location
-                    tempInCen.visibility = View.VISIBLE
-                    tempInFah.visibility = View.VISIBLE
-                    latitude.visibility = View.VISIBLE
-                    longitude.visibility = View.VISIBLE
-                    tempInCen.text ="Temperature in Centigrade : " + current.tempInC
-                    tempInFah.text = "Temperature in Fahrenheit : " + current.tempInF
-                    latitude.text = "Latitude : " + location.latitude
-                    longitude.text = " Longitude : " + location.longitude
-                    progressBar.visibility= View.GONE
-                }else{
-                    progressBar.visibility= View.GONE
-                    Toast.makeText(
-                            this@MainActivity, "Something went wrong try again later",
-                            Toast.LENGTH_SHORT
-                    ).show()
-                    return
-                }
+                                }
+                            }
+                        }
+                })
 
-            }
-
-            override fun onFailure(call: Call<WeatherDetail>, t: Throwable) {
-                progressBar.visibility= View.GONE
-                Toast.makeText(this@MainActivity, "Something went wrong try again later", Toast.LENGTH_SHORT).show()
-
-            }
-
-        })
-
-
+        }else{
+            Toast.makeText(this,"No internet",Toast.LENGTH_SHORT).show()
+        }
     }
 
     fun init(){
@@ -99,4 +117,5 @@ class MainActivity : AppCompatActivity() {
         tempInFah=findViewById(R.id.tempFah)
         progressBar = findViewById(R.id.progressBar)
     }
+
 }
