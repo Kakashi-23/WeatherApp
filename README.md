@@ -14,7 +14,7 @@ https://drive.google.com/drive/folders/1K6snXjslW42zXrEraTY9ie5AOJnD01a2?usp=sha
 
 ## Screenshots
 
-![App Screenshot](https://github.com/Kakashi-23/WeatherApp/blob/app_screenchots/Screenshots/1.jpg?raw=true "Register")
+[<img src='https://github.com/Kakashi-23/WeatherApp/blob/app_screenchots/Screenshots/1.jpg' height="36px" width="36px"/>](https://github.com/Kakashi-23/WeatherApp/blob/app_screenchots/Screenshots/1.jpg?raw=true "Register")
 
 ![App Screenshot](https://github.com/Kakashi-23/WeatherApp/blob/app_screenchots/Screenshots/3.jpg?raw=true "Pincode")
 
